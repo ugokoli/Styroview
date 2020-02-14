@@ -1,4 +1,4 @@
-package ltd.uxlab.styroview
+package com.ugokoli.styroview
 
 import org.junit.Test
 

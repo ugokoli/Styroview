@@ -4,7 +4,7 @@
  * Copyright (c) 2019.
  */
 
-package ltd.uxlab.styroview;
+package com.ugokoli.styroview;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -21,7 +21,7 @@ import android.view.View;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
-import ltd.uxlab.styroview.R;
+import com.ugokoli.styroview.R;
 
 public class SplitEditText extends AppCompatEditText {
     public static final String XML_NAMESPACE_ANDROID = "http://schemas.android.com/apk/res/android";
