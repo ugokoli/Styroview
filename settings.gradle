@@ -1,1 +1,1 @@
-include ':app', ':pincode'
+include ':app', ':splitedittext', ':fingerselector'
