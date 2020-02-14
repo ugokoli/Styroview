@@ -9,13 +9,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.ugokoli.styroview.Styroview">
+        <activity android:name=".samples.BaseSample"></activity>
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".samples.FingerSelectorSample"
+            android:label="@string/title_activity_finger_selector_sample" />
+        <activity
+            android:name=".samples.SplitEditTextSample"
+            android:label="@string/title_activity_split_edit_text_sample" />
     </application>
 
 </manifest>
