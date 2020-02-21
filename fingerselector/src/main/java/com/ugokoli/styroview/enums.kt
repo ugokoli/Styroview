@@ -11,5 +11,5 @@ enum class Hand {
 }
 
 enum class Finger {
-    THUMB, INDEX, MIDDLE, RING, PINKY
+    THUMB, INDEX, MIDDLE, RING, PINKY, NONE
 }
