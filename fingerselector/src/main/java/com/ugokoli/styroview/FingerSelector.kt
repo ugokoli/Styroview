@@ -34,19 +34,19 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
     //DistalPhalanx
     private fun getFingerWidth(): Int {
-        return width / 5
+        return (width - paddingLeft - paddingRight) / 5
     }
 
     private fun getFingerTouchZoneRect(widthToLeftFactor: Int, widthToTopPercentage: Float, widthToHeightFactor: Float): Rect {
         val leftX = widthToLeftFactor * getFingerWidth()
-        var x = leftX
+        var x = leftX + paddingLeft
 
         // Mirror LEFT to RIGHT across x-axis
         if(hand == Hand.RIGHT) {
-            x = (width/1) - leftX - getFingerWidth()
+            x = width - leftX - getFingerWidth() + paddingRight
         }
 
-        val leftY = (widthToTopPercentage * width / 100).toInt()
+        val leftY = ((widthToTopPercentage * width / 100) + paddingTop).toInt()
 
         return Rect(x, leftY, (x + getFingerWidth()), (leftY + (getFingerWidth() * widthToHeightFactor)).toInt())
     }
