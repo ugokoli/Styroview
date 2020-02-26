@@ -25,7 +25,6 @@ class HandPalm {
         for(finger in fingersTouchArea) {
             val rect = finger.value
 
-
             if(finger.key == Finger.THUMB) {
                 //Finger sides: THUMB
                 canvas?.drawLine(rect.left, rect.top, rect.left, rect.bottom, paint)
@@ -51,7 +50,7 @@ class HandPalm {
                 val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
                 drawCurve(canvas, thumb.left, thumb.top, thumb.right, rightCurvePoint, 90, paint)
 
-                //Thumb finger extension lines
+                //PINKY extension lines
                 canvas?.drawLine(pinky.right, pinky.bottom, pinky.right, thumb.bottom, paint)
 
                 //Palm Butt
@@ -63,7 +62,23 @@ class HandPalm {
                 drawCurve(canvas, thumb.right, thumb.bottom, middle.right, extensionBottom, 90, paint)
             }
             Hand.RIGHT -> {
+                //Extend INDEX right side to THUMB
+                canvas?.drawLine(index.right, index.bottom, thumb.left, thumb.top, paint)
 
+                //Finger tip: THUMB
+                val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
+                drawCurve(canvas, thumb.right, thumb.top, thumb.left, rightCurvePoint, -90, paint)
+
+                //PINKY extension lines
+                canvas?.drawLine(pinky.left, pinky.bottom, pinky.left, thumb.bottom, paint)
+
+                //Palm Butt
+                val buttOval = RectF(pinky.left, thumb.bottom - thumbHeight, thumb.right, thumb.bottom + thumbHeight)
+                canvas?.drawArc(buttOval, 180f, -180f, false, paint)
+
+                //Thumb chick
+                val extensionBottom = thumb.bottom + (halfThumbHeight / 2)
+                drawCurve(canvas, thumb.left, thumb.bottom, middle.left, extensionBottom, -90, paint)
             }
         }
     }

@@ -41,7 +41,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
         // Mirror LEFT to RIGHT across x-axis
         if(hand == Hand.RIGHT) {
-            x = width - leftX - getFingerWidth() + paddingRight
+            x = width - leftX - getFingerWidth() - paddingRight
         }
 
         val leftY = (widthToTopPercentage * width / 100) + paddingTop
@@ -53,7 +53,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         paint.color = ContextCompat.getColor(context, R.color.colorPrimary)
         paint.isAntiAlias = true
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = resources.displayMetrics.density * 5
+        paint.strokeWidth = resources.displayMetrics.density * 3
 
         hand = Hand.LEFT
         selectedFinger = Finger.NONE
