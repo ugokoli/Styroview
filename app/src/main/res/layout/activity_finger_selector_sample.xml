@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
-            android:padding="10dp"
+            android:padding="30dp"
 
             app:layout_anchor="@+id/constraintLayout"
             app:layout_anchorGravity="center"

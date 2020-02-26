@@ -18,13 +18,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     constructor(ctx: Context, attrs: AttributeSet): super(ctx, attrs)
 
     private val paint = Paint()
-    private val drawHand = DrawHand()
+    private val drawHand = HandPalm()
     // Positional parameters defaults are derived from Hand.LEFT
     private lateinit var selectedFinger: Finger
-    private lateinit var selectedFingerRect: Rect
-    private lateinit var fingersTouchArea: HashMap<Finger, Rect>
-    private var handLeftImg: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_hand_profile_left))
-    private var handRightImg: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_hand_profile_right))
+    private lateinit var selectedFingerRect: RectF
+    private lateinit var fingersTouchArea: HashMap<Finger, RectF>
     private var defaultFingerprint: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_fingerprint_black_120dp))
     var fingerprintImg = defaultFingerprint
     var hand = Hand.LEFT
@@ -33,11 +31,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         }
 
     //DistalPhalanx
-    private fun getFingerWidth(): Int {
-        return (width - paddingLeft - paddingRight) / 5
+    private fun getFingerWidth(): Float {
+        return (width - paddingLeft - paddingRight).toFloat() / 5
     }
 
-    private fun getFingerTouchZoneRect(widthToLeftFactor: Int, widthToTopPercentage: Float, widthToHeightFactor: Float): Rect {
+    private fun getFingerTouchZoneRect(widthToLeftFactor: Int, widthToTopPercentage: Float, widthToHeightFactor: Float): RectF {
         val leftX = widthToLeftFactor * getFingerWidth()
         var x = leftX + paddingLeft
 
@@ -46,9 +44,9 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
             x = width - leftX - getFingerWidth() + paddingRight
         }
 
-        val leftY = ((widthToTopPercentage * width / 100) + paddingTop).toInt()
+        val leftY = (widthToTopPercentage * width / 100) + paddingTop
 
-        return Rect(x, leftY, (x + getFingerWidth()), (leftY + (getFingerWidth() * widthToHeightFactor)).toInt())
+        return RectF(x, leftY, (x + getFingerWidth()), (leftY + (getFingerWidth() * widthToHeightFactor)))
     }
 
     private fun init() {
@@ -59,7 +57,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
         hand = Hand.LEFT
         selectedFinger = Finger.NONE
-        selectedFingerRect = Rect()
+        selectedFingerRect = RectF()
         fingerprintImg = defaultFingerprint
 
         initializeFingersTouchArea()
@@ -75,27 +73,10 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         fingersTouchArea[Finger.PINKY] = getFingerTouchZoneRect(4, 27.34f, 2.5f)
     }
 
-    private fun drawBitmapHand(canvas: Canvas?) {
-        when(hand) {
-            Hand.LEFT -> {
-                if(handLeftImg != null) {
-                    val srcRect = Rect(0, 0, handLeftImg!!.width, handLeftImg!!.height)
-                    val distRect = Rect(0, 0, width, height)
-                    canvas?.drawBitmap(handLeftImg!!, srcRect, distRect, paint)
-                }
-            }
-            Hand.RIGHT -> {
-                if(handRightImg != null) {
-                    canvas?.drawBitmap(handRightImg!!, 0f, 0f, paint)
-                }
-            }
-        }
-    }
-
     private fun drawSelectedFingerprint(canvas: Canvas?) {
         if(selectedFinger != Finger.NONE) {
             if(fingerprintImg != null) {
-                canvas?.drawBitmap(fingerprintImg!!, selectedFingerRect, selectedFingerRect, paint)
+                //canvas?.drawBitmap(fingerprintImg!!, selectedFingerRect, selectedFingerRect, paint)
             }
         }
     }
