@@ -17,6 +17,24 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     constructor(ctx: Context) : super(ctx)
     constructor(ctx: Context, attrs: AttributeSet): super(ctx, attrs)
 
+    private val WIDTH_TO_LEFT_FACTOR_THUMB = 0
+    private val WIDTH_TO_LEFT_FACTOR_INDEX = 1
+    private val WIDTH_TO_LEFT_FACTOR_MIDDLE = 2
+    private val WIDTH_TO_LEFT_FACTOR_RING = 3
+    private val WIDTH_TO_LEFT_FACTOR_PINKY = 4
+
+    private val WIDTH_TO_TOP_PERCENTAGE_THUMB = 54.69f
+    private val WIDTH_TO_TOP_PERCENTAGE_INDEX = 11.72f
+    private val WIDTH_TO_TOP_PERCENTAGE_MIDDLE = 0f
+    private val WIDTH_TO_TOP_PERCENTAGE_RING = 5.86f
+    private val WIDTH_TO_TOP_PERCENTAGE_PINKY = 27.34f
+
+    private val WIDTH_TO_HEIGHT_FACTOR_THUMB = 2.5f
+    private val WIDTH_TO_HEIGHT_FACTOR_INDEX = 3.2f
+    private val WIDTH_TO_HEIGHT_FACTOR_MIDDLE = 4f
+    private val WIDTH_TO_HEIGHT_FACTOR_RING = 3.7f
+    private val WIDTH_TO_HEIGHT_FACTOR_PINKY = 2.5f
+
     private val paint = Paint()
     private val drawHand = HandPalm()
     // Positional parameters defaults are derived from Hand.LEFT
@@ -66,11 +84,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private fun initializeFingersTouchArea() {
         fingersTouchArea = HashMap()
 
-        fingersTouchArea[Finger.THUMB] = getFingerTouchZoneRect(0, 54.69f, 2.5f)
-        fingersTouchArea[Finger.INDEX] = getFingerTouchZoneRect(1, 11.72f, 3.2f)
-        fingersTouchArea[Finger.MIDDLE] = getFingerTouchZoneRect(2, 0f, 4f)
-        fingersTouchArea[Finger.RING] = getFingerTouchZoneRect(3, 5.86f, 3.7f)
-        fingersTouchArea[Finger.PINKY] = getFingerTouchZoneRect(4, 27.34f, 2.5f)
+        fingersTouchArea[Finger.THUMB] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_THUMB, WIDTH_TO_TOP_PERCENTAGE_THUMB, WIDTH_TO_HEIGHT_FACTOR_THUMB)
+        fingersTouchArea[Finger.INDEX] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_INDEX, WIDTH_TO_TOP_PERCENTAGE_INDEX, WIDTH_TO_HEIGHT_FACTOR_INDEX)
+        fingersTouchArea[Finger.MIDDLE] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_MIDDLE, WIDTH_TO_TOP_PERCENTAGE_MIDDLE, WIDTH_TO_HEIGHT_FACTOR_MIDDLE)
+        fingersTouchArea[Finger.RING] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_RING, WIDTH_TO_TOP_PERCENTAGE_RING, WIDTH_TO_HEIGHT_FACTOR_RING)
+        fingersTouchArea[Finger.PINKY] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_PINKY, WIDTH_TO_TOP_PERCENTAGE_PINKY, WIDTH_TO_HEIGHT_FACTOR_PINKY)
     }
 
     private fun drawSelectedFingerprint(canvas: Canvas?) {
@@ -95,7 +113,6 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        //drawBitmapHand(canvas)
         drawHand.draw(canvas, hand, fingersTouchArea, paint)
         drawSelectedFingerprint(canvas)
     }
