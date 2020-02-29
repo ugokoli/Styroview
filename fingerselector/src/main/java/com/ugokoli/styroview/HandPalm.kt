@@ -12,7 +12,9 @@ import kotlin.math.sin
  */
 
 class HandPalm {
-    fun draw(canvas: Canvas?, hand: Hand, fingersTouchArea: HashMap<Finger, RectF>, paint: Paint) {
+    fun draw(canvas: Canvas?, hand: Hand, fingersTouchArea: HashMap<Finger, RectF>, touchingFinger: Finger, touching: Boolean, highLightPaint: Paint, linePaint: Paint) {
+        var fingerPaint = linePaint
+
         val thumb = fingersTouchArea[Finger.THUMB]!!
         val index = fingersTouchArea[Finger.INDEX]!!
         val middle = fingersTouchArea[Finger.MIDDLE]!!
@@ -21,64 +23,73 @@ class HandPalm {
         val tipPadding = (middle.bottom - middle.top) / 10
         val thumbHeight = (thumb.bottom - thumb.top)
         val halfThumbHeight = thumbHeight / 2
+        val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
+        val extensionBottom = thumb.bottom + (halfThumbHeight / 2)
 
         for(finger in fingersTouchArea) {
             val rect = finger.value
+            if(touching && touchingFinger == finger.key) {
+                fingerPaint = highLightPaint
+            }
 
-            if(finger.key == Finger.THUMB) {
-                //Finger sides: THUMB
-                canvas?.drawLine(rect.left, rect.top, rect.left, rect.bottom, paint)
-                canvas?.drawLine(rect.right, rect.top, rect.right, rect.bottom, paint)
-            } else {
+            if(finger.key != Finger.THUMB) {
                 val paddedTop = rect.top + tipPadding
-                //Finger sides: OTHERS
-                canvas?.drawLine(rect.left, paddedTop, rect.left, rect.bottom, paint)
-                canvas?.drawLine(rect.right, paddedTop, rect.right, rect.bottom, paint)
 
                 //Finger tip: OTHERS
                 val tipOval = RectF(rect.left, rect.top, rect.right, rect.top + (tipPadding * 2))
-                canvas?.drawArc(tipOval, 180f, 180f, false, paint)
+                canvas?.drawArc(tipOval, 180f, 180f, false, fingerPaint)
+                //Finger sides: OTHERS
+                canvas?.drawLine(rect.left, paddedTop, rect.left, rect.bottom, fingerPaint)
+                canvas?.drawLine(rect.right, paddedTop, rect.right, rect.bottom, fingerPaint)
             }
+
+            fingerPaint = linePaint
+        }
+
+        if(touching && touchingFinger == Finger.THUMB) {
+            fingerPaint = highLightPaint
         }
 
         when(hand) {
             Hand.LEFT -> {
                 //Extend INDEX left side to THUMB
-                canvas?.drawLine(index.left, index.bottom, thumb.right, thumb.top, paint)
+                canvas?.drawLine(index.left, index.bottom, thumb.right, rightCurvePoint, linePaint)
 
                 //Finger tip: THUMB
-                val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
-                drawCurve(canvas, thumb.left, thumb.top, thumb.right, rightCurvePoint, 90, paint)
+                drawCurve(canvas, thumb.left, thumb.top, thumb.right, rightCurvePoint, 90, fingerPaint)
+                //Finger sides: THUMB
+                canvas?.drawLine(thumb.left, thumb.top, thumb.left, thumb.bottom, fingerPaint)
+                canvas?.drawLine(thumb.right, rightCurvePoint, thumb.right, thumb.bottom, fingerPaint)
 
                 //PINKY extension lines
-                canvas?.drawLine(pinky.right, pinky.bottom, pinky.right, thumb.bottom, paint)
+                canvas?.drawLine(pinky.right, pinky.bottom, pinky.right, thumb.bottom, linePaint)
 
                 //Palm Butt
                 val buttOval = RectF(thumb.left, thumb.bottom - thumbHeight, pinky.right, thumb.bottom + thumbHeight)
-                canvas?.drawArc(buttOval, 180f, -180f, false, paint)
+                canvas?.drawArc(buttOval, 180f, -180f, false, linePaint)
 
                 //Thumb chick
-                val extensionBottom = thumb.bottom + (halfThumbHeight / 2)
-                drawCurve(canvas, thumb.right, thumb.bottom, middle.right, extensionBottom, 90, paint)
+                drawCurve(canvas, thumb.right, thumb.bottom, middle.right, extensionBottom, 90, linePaint)
             }
             Hand.RIGHT -> {
                 //Extend INDEX right side to THUMB
-                canvas?.drawLine(index.right, index.bottom, thumb.left, thumb.top, paint)
+                canvas?.drawLine(index.right, index.bottom, thumb.left, rightCurvePoint, linePaint)
 
                 //Finger tip: THUMB
-                val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
-                drawCurve(canvas, thumb.right, thumb.top, thumb.left, rightCurvePoint, -90, paint)
+                drawCurve(canvas, thumb.right, thumb.top, thumb.left, rightCurvePoint, -90, fingerPaint)
+                //Finger sides: THUMB
+                canvas?.drawLine(thumb.left, rightCurvePoint, thumb.left, thumb.bottom, fingerPaint)
+                canvas?.drawLine(thumb.right, thumb.top, thumb.right, thumb.bottom, fingerPaint)
 
                 //PINKY extension lines
-                canvas?.drawLine(pinky.left, pinky.bottom, pinky.left, thumb.bottom, paint)
+                canvas?.drawLine(pinky.left, pinky.bottom, pinky.left, thumb.bottom, linePaint)
 
                 //Palm Butt
                 val buttOval = RectF(pinky.left, thumb.bottom - thumbHeight, thumb.right, thumb.bottom + thumbHeight)
-                canvas?.drawArc(buttOval, 180f, -180f, false, paint)
+                canvas?.drawArc(buttOval, 180f, -180f, false, linePaint)
 
                 //Thumb chick
-                val extensionBottom = thumb.bottom + (halfThumbHeight / 2)
-                drawCurve(canvas, thumb.left, thumb.bottom, middle.left, extensionBottom, -90, paint)
+                drawCurve(canvas, thumb.left, thumb.bottom, middle.left, extensionBottom, -90, linePaint)
             }
         }
     }

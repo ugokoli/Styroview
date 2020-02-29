@@ -35,11 +35,14 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private val WIDTH_TO_HEIGHT_FACTOR_RING = 3.7f
     private val WIDTH_TO_HEIGHT_FACTOR_PINKY = 2.5f
 
+    private var touching: Boolean = false
+
     private val paint = Paint()
+    private val highLightPaint = Paint()
     private val drawHand = HandPalm()
     // Positional parameters defaults are derived from Hand.LEFT
+    private lateinit var touchingFinger: Finger
     private lateinit var selectedFinger: Finger
-    private lateinit var selectedFingerRect: RectF
     private lateinit var fingersTouchArea: HashMap<Finger, RectF>
     private var defaultFingerprint: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_fingerprint_black_120dp))
     var fingerprintImg = defaultFingerprint
@@ -47,6 +50,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         set(value) {
             field = value
         }
+
+    var squarePressListener: FingerSelectedListener? = null
 
     //DistalPhalanx
     private fun getFingerWidth(): Float {
@@ -68,14 +73,19 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     }
 
     private fun init() {
-        paint.color = ContextCompat.getColor(context, R.color.colorPrimary)
+        paint.color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
         paint.isAntiAlias = true
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = resources.displayMetrics.density * 3
 
-        hand = Hand.LEFT
+        highLightPaint.color = ContextCompat.getColor(context, R.color.colorAccent)
+        highLightPaint.isAntiAlias = true
+        highLightPaint.style = Paint.Style.FILL_AND_STROKE
+        highLightPaint.strokeWidth = resources.displayMetrics.density * 5
+
+        hand = Hand.RIGHT
+        touchingFinger = Finger.NONE
         selectedFinger = Finger.NONE
-        selectedFingerRect = RectF()
         fingerprintImg = defaultFingerprint
 
         initializeFingersTouchArea()
@@ -94,9 +104,23 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private fun drawSelectedFingerprint(canvas: Canvas?) {
         if(selectedFinger != Finger.NONE) {
             if(fingerprintImg != null) {
-                //canvas?.drawBitmap(fingerprintImg!!, selectedFingerRect, selectedFingerRect, paint)
+                val rectF = fingersTouchArea[selectedFinger]!!
+                val newBottom = rectF.top + rectF.right - rectF.left
+                val desRectF = RectF(rectF.left, rectF.top, rectF.right, newBottom)
+                val srcRect = Rect(0, 0, fingerprintImg!!.width, fingerprintImg!!.height)
+                canvas?.drawBitmap(fingerprintImg!!, srcRect, desRectF, paint)
             }
         }
+    }
+
+    private fun getTouchedFingerFor(x: Float?, y: Float?): Finger {
+        for(finger in fingersTouchArea) {
+            if(finger.value.contains(x!!, y!!)) {
+                return finger.key
+            }
+        }
+
+        return Finger.NONE
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -113,15 +137,47 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        drawHand.draw(canvas, hand, fingersTouchArea, paint)
+        drawHand.draw(canvas, hand, fingersTouchArea, touchingFinger, touching, highLightPaint, paint)
         drawSelectedFingerprint(canvas)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return super.onTouchEvent(event)
+        if (!isEnabled) {
+            return false
+        }
+        val x = event?.x
+        val y = event?.y
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                touchingFinger = getTouchedFingerFor(x, y)
+                touching = true
+                invalidate()
+            }
+            MotionEvent.ACTION_MOVE -> {
+
+            }
+            MotionEvent.ACTION_UP -> {
+                touching = false
+                invalidate()
+
+                val finalTouchedFinger = getTouchedFingerFor(x, y)
+                if (touchingFinger != Finger.NONE && touchingFinger == finalTouchedFinger) {
+                    selectedFinger = finalTouchedFinger
+                    squarePressListener?.onFingerSelected(hand, finalTouchedFinger)
+                }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                touching = false
+            }
+        }
+        return true
     }
 
     override fun onAnimationUpdate(animation: ValueAnimator?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented")
+    }
+
+    interface FingerSelectedListener {
+        fun onFingerSelected(hand: Hand, finger: Finger)
     }
 }
