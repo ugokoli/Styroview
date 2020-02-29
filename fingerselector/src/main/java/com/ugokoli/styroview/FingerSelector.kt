@@ -7,6 +7,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.ugokoli.styroview.constants.Finger
+import com.ugokoli.styroview.constants.Hand
 
 /**
  * Author Ugonna Okoli

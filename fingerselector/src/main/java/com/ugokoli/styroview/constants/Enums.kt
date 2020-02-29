@@ -1,4 +1,4 @@
-package com.ugokoli.styroview
+package com.ugokoli.styroview.constants
 
 /**
  * Author Ugonna Okoli

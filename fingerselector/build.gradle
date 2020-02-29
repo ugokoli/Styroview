@@ -1,6 +1,13 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+repositories {
+    mavenCentral()
+}
 
 android {
     compileSdkVersion 29
@@ -10,7 +17,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0"
+        versionName "0.1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -28,12 +35,35 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
-repositories {
-    mavenCentral()
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'fingerSelector'
+
+    publishedGroupId = 'com.ugokoli.styroview'
+    libraryName = 'FingerSelector'
+    artifact = 'fingerSelector'
+
+    libraryDescription = 'This view is a container that provides an interaction for selection of a finger on either Right or Left hand.'
+
+    siteUrl = 'https://github.com/ugokoli/Styroview'
+    gitUrl = 'https://github.com/ugokoli/Styroview.git'
+
+    libraryVersion = '0.1.0'
+
+    developerId = 'ugokoli'
+    developerName = 'Ugonna Okoli'
+    developerEmail = 'ugokoli30@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
+
+apply from: '../publish.gradle'

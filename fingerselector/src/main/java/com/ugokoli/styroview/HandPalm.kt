@@ -1,6 +1,8 @@
 package com.ugokoli.styroview
 
 import android.graphics.*
+import com.ugokoli.styroview.constants.Finger
+import com.ugokoli.styroview.constants.Hand
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
