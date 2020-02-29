@@ -41,6 +41,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private val highLightPaint = Paint()
     private val drawHand = HandPalm()
     // Positional parameters defaults are derived from Hand.LEFT
+    private lateinit var downTouchingPoint: PointF
     private lateinit var touchingFinger: Finger
     private lateinit var selectedFinger: Finger
     private lateinit var fingersTouchArea: HashMap<Finger, RectF>
@@ -49,6 +50,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     var hand = Hand.LEFT
         set(value) {
             field = value
+            init()
+            invalidate()
         }
 
     var squarePressListener: FingerSelectedListener? = null
@@ -83,7 +86,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         highLightPaint.style = Paint.Style.FILL_AND_STROKE
         highLightPaint.strokeWidth = resources.displayMetrics.density * 5
 
-        hand = Hand.RIGHT
+        downTouchingPoint = PointF()
         touchingFinger = Finger.NONE
         selectedFinger = Finger.NONE
         fingerprintImg = defaultFingerprint
@@ -141,6 +144,10 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         drawSelectedFingerprint(canvas)
     }
 
+    override fun performClick(): Boolean {
+        return super.performClick()
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         if (!isEnabled) {
             return false
@@ -149,6 +156,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         val y = event?.y
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                downTouchingPoint = PointF(x!!, y!!)
                 touchingFinger = getTouchedFingerFor(x, y)
                 touching = true
                 invalidate()
@@ -160,10 +168,34 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
                 touching = false
                 invalidate()
 
+                //Evaluate finger select
                 val finalTouchedFinger = getTouchedFingerFor(x, y)
-                if (touchingFinger != Finger.NONE && touchingFinger == finalTouchedFinger) {
+                if (
+                        touchingFinger != Finger.NONE
+                        && touchingFinger != selectedFinger
+                        && touchingFinger == finalTouchedFinger
+                ) {
                     selectedFinger = finalTouchedFinger
                     squarePressListener?.onFingerSelected(hand, finalTouchedFinger)
+
+                    performClick()
+                }
+
+                //Evaluate hand swipe toggle
+                val xSwipeDistance  = if(downTouchingPoint.x > x!!) {
+                    downTouchingPoint.x - x
+                } else {
+                    x - downTouchingPoint.x
+                }
+                val xSwipeTime = event.eventTime - event.downTime
+
+                //Toggle when x swipe distance spans across 2 fingers in less than a second
+                if(xSwipeDistance > getFingerWidth() * 2 && xSwipeTime < 1000) {
+                    hand = if(hand == Hand.RIGHT) {
+                        Hand.LEFT
+                    } else {
+                        Hand.RIGHT
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> {
