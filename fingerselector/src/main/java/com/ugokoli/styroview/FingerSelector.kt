@@ -4,11 +4,14 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.ugokoli.styroview.constants.Finger
 import com.ugokoli.styroview.constants.Hand
+import kotlin.math.min
+
 
 /**
  * Author Ugonna Okoli
@@ -16,9 +19,6 @@ import com.ugokoli.styroview.constants.Hand
  * 2/16/2020
  */
 class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
-    constructor(ctx: Context) : super(ctx)
-    constructor(ctx: Context, attrs: AttributeSet): super(ctx, attrs)
-
     private val WIDTH_TO_LEFT_FACTOR_THUMB = 0
     private val WIDTH_TO_LEFT_FACTOR_INDEX = 1
     private val WIDTH_TO_LEFT_FACTOR_MIDDLE = 2
@@ -37,6 +37,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private val WIDTH_TO_HEIGHT_FACTOR_RING = 3.7f
     private val WIDTH_TO_HEIGHT_FACTOR_PINKY = 2.5f
 
+    private var viewWidth: Int = 0
+    private var viewHeight: Int = 0
     private var touching: Boolean = false
 
     private val paint = Paint()
@@ -48,36 +50,39 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private lateinit var selectedFinger: Finger
     private lateinit var fingersTouchArea: HashMap<Finger, RectF>
     private var defaultFingerprint: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_fingerprint_black_120dp))
+    private var mOrientation = 1 //1:up, 2:down
     var fingerprintImg = defaultFingerprint
     var hand = Hand.LEFT
         set(value) {
             field = value
-            init()
+            refresh()
             invalidate()
         }
 
-    var squarePressListener: FingerSelectedListener? = null
+    var fingerSelectedListener: FingerSelectedListener? = null
 
-    //DistalPhalanx
-    private fun getFingerWidth(): Float {
-        return (width - paddingLeft - paddingRight).toFloat() / 5
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
+        init(context, attrs)
+    }
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init(context, attrs)
     }
 
-    private fun getFingerTouchZoneRect(widthToLeftFactor: Int, widthToTopPercentage: Float, widthToHeightFactor: Float): RectF {
-        val leftX = widthToLeftFactor * getFingerWidth()
-        var x = leftX + paddingLeft
+    private fun init(context: Context, attrs: AttributeSet) {
+        //get custom attributes
+        val a = context.theme.obtainStyledAttributes(attrs, R.styleable.FingerSelector, 0, 0)
 
-        // Mirror LEFT to RIGHT across x-axis
-        if(hand == Hand.RIGHT) {
-            x = width - leftX - getFingerWidth() - paddingRight
+        try {
+            mOrientation = a.getInteger(R.styleable.FingerSelector_orientation, mOrientation)
+        } catch (e: RuntimeException) {
+            e.printStackTrace()
+        } finally {
+            a.recycle()
         }
-
-        val leftY = (widthToTopPercentage * width / 100) + paddingTop
-
-        return RectF(x, leftY, (x + getFingerWidth()), (leftY + (getFingerWidth() * widthToHeightFactor)))
     }
 
-    private fun init() {
+    private fun refresh() {
         paint.color = ContextCompat.getColor(context, R.color.colorPrimaryDark)
         paint.isAntiAlias = true
         paint.style = Paint.Style.STROKE
@@ -106,6 +111,25 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         fingersTouchArea[Finger.PINKY] = getFingerTouchZoneRect(WIDTH_TO_LEFT_FACTOR_PINKY, WIDTH_TO_TOP_PERCENTAGE_PINKY, WIDTH_TO_HEIGHT_FACTOR_PINKY)
     }
 
+    //DistalPhalanx
+    private fun getFingerWidth(): Float {
+        return (viewWidth - paddingLeft - paddingRight).toFloat() / 5
+    }
+
+    private fun getFingerTouchZoneRect(widthToLeftFactor: Int, widthToTopPercentage: Float, widthToHeightFactor: Float): RectF {
+        val leftX = widthToLeftFactor * getFingerWidth()
+        var x = leftX + paddingLeft
+
+        // Mirror LEFT to RIGHT across x-axis
+        if(hand == Hand.RIGHT) {
+            x = viewWidth - leftX - getFingerWidth() - paddingRight
+        }
+
+        val leftY = (widthToTopPercentage * viewWidth / 100) + paddingTop
+
+        return RectF(x, leftY, (x + getFingerWidth()), (leftY + (getFingerWidth() * widthToHeightFactor)))
+    }
+
     private fun drawSelectedFingerprint(canvas: Canvas?) {
         if(selectedFinger != Finger.NONE) {
             if(fingerprintImg != null) {
@@ -130,13 +154,40 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        init()
+        refresh()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        val desiredWidth = suggestedMinimumWidth + paddingLeft + paddingRight
+        val desiredHeight = suggestedMinimumHeight + paddingTop + paddingBottom
 
-        setMeasuredDimension(measuredWidth, measuredHeight)
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        viewWidth = when (widthMode) {
+            MeasureSpec.EXACTLY -> widthSize
+            MeasureSpec.AT_MOST -> min(desiredWidth, widthSize)
+            else -> desiredWidth
+        }
+
+        viewHeight = when (heightMode) {
+            MeasureSpec.EXACTLY -> heightSize
+            MeasureSpec.AT_MOST -> min(desiredHeight, heightSize)
+            else -> desiredHeight
+        }
+
+        // Recalculate viewHeight from contents(hand palm) boundries
+        initializeFingersTouchArea()
+        if(fingersTouchArea.containsKey(Finger.THUMB)) {
+            val thumb = fingersTouchArea[Finger.THUMB]
+            val thumbHeight = thumb!!.bottom - thumb.top
+
+            viewHeight = thumb.bottom.toInt() + thumbHeight.toInt() + paddingBottom
+        }
+
+        setMeasuredDimension(viewWidth, viewHeight)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -178,7 +229,7 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
                         && touchingFinger == finalTouchedFinger
                 ) {
                     selectedFinger = finalTouchedFinger
-                    squarePressListener?.onFingerSelected(hand, finalTouchedFinger)
+                    fingerSelectedListener?.onFingerSelected(hand, finalTouchedFinger)
 
                     performClick()
                 }

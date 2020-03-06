@@ -43,7 +43,7 @@ dependencies {
 }
 
 ext {
-    bintrayRepo = 'maven'
+    bintrayRepo = 'Styroview'
     bintrayName = 'fingerSelector'
 
     publishedGroupId = 'com.ugokoli.styroview'

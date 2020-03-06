@@ -1,6 +1,7 @@
 package com.ugokoli.styroview
 
 import android.graphics.*
+import android.util.Log
 import com.ugokoli.styroview.constants.Finger
 import com.ugokoli.styroview.constants.Hand
 import kotlin.math.atan2
@@ -25,6 +26,7 @@ class HandPalm {
         val tipPadding = (middle.bottom - middle.top) / 10
         val thumbHeight = (thumb.bottom - thumb.top)
         val halfThumbHeight = thumbHeight / 2
+        val palmButtBottom = thumb.bottom + thumbHeight
         val rightCurvePoint = thumb.top + (halfThumbHeight / 2)
         val extensionBottom = thumb.bottom + (halfThumbHeight / 2)
 
@@ -67,7 +69,7 @@ class HandPalm {
                 canvas?.drawLine(pinky.right, pinky.bottom, pinky.right, thumb.bottom, linePaint)
 
                 //Palm Butt
-                val buttOval = RectF(thumb.left, thumb.bottom - thumbHeight, pinky.right, thumb.bottom + thumbHeight)
+                val buttOval = RectF(thumb.left, thumb.bottom - thumbHeight, pinky.right, palmButtBottom)
                 canvas?.drawArc(buttOval, 180f, -180f, false, linePaint)
 
                 //Thumb chick
@@ -87,7 +89,7 @@ class HandPalm {
                 canvas?.drawLine(pinky.left, pinky.bottom, pinky.left, thumb.bottom, linePaint)
 
                 //Palm Butt
-                val buttOval = RectF(pinky.left, thumb.bottom - thumbHeight, thumb.right, thumb.bottom + thumbHeight)
+                val buttOval = RectF(pinky.left, thumb.bottom - thumbHeight, thumb.right, palmButtBottom)
                 canvas?.drawArc(buttOval, 180f, -180f, false, linePaint)
 
                 //Thumb chick
