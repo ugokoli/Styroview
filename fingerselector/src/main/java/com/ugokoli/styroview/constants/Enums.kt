@@ -7,9 +7,17 @@ package com.ugokoli.styroview.constants
  */
 
 enum class Hand {
-    RIGHT, LEFT
+    RIGHT, LEFT;
+
+    companion object {
+        fun valueOf(value: Int) = values().first{ it.ordinal == value }
+    }
 }
 
 enum class Finger {
-    THUMB, INDEX, MIDDLE, RING, PINKY, NONE
+    THUMB, INDEX, MIDDLE, RING, PINKY, NONE;
+
+    companion object {
+        fun valueOf(value: Int) = values().first{ it.ordinal == value }
+    }
 }

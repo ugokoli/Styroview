@@ -4,7 +4,6 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -45,9 +44,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private val highLightPaint = Paint()
     private val drawHand = HandPalm()
     // Positional parameters defaults are derived from Hand.LEFT
-    private lateinit var downTouchingPoint: PointF
     private lateinit var touchingFinger: Finger
-    private lateinit var selectedFinger: Finger
+    private lateinit var downTouchingPoint: PointF
     private lateinit var fingersTouchArea: HashMap<Finger, RectF>
     private var defaultFingerprint: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_fingerprint_black_120dp))
     private var mOrientation = 1 //1:up, 2:down
@@ -57,6 +55,14 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
             field = value
             refresh()
             invalidate()
+            emitSelected()
+        }
+    var finger = Finger.INDEX
+        set(value) {
+            field = value
+            refresh()
+            invalidate()
+            emitSelected()
         }
 
     var fingerSelectedListener: FingerSelectedListener? = null
@@ -75,6 +81,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
         try {
             mOrientation = a.getInteger(R.styleable.FingerSelector_orientation, mOrientation)
+            hand = Hand.valueOf(a.getInteger(R.styleable.FingerSelector_defaultHand, hand.ordinal))
+            finger = Finger.valueOf(a.getInteger(R.styleable.FingerSelector_defaultFinger, finger.ordinal))
         } catch (e: RuntimeException) {
             e.printStackTrace()
         } finally {
@@ -95,7 +103,6 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
 
         downTouchingPoint = PointF()
         touchingFinger = Finger.NONE
-        selectedFinger = Finger.NONE
         fingerprintImg = defaultFingerprint
 
         initializeFingersTouchArea()
@@ -131,9 +138,9 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     }
 
     private fun drawSelectedFingerprint(canvas: Canvas?) {
-        if(selectedFinger != Finger.NONE) {
+        if(finger != Finger.NONE) {
             if(fingerprintImg != null) {
-                val rectF = fingersTouchArea[selectedFinger]!!
+                val rectF = fingersTouchArea[finger]!!
                 val newBottom = rectF.top + rectF.right - rectF.left
                 val desRectF = RectF(rectF.left, rectF.top, rectF.right, newBottom)
                 val srcRect = Rect(0, 0, fingerprintImg!!.width, fingerprintImg!!.height)
@@ -143,13 +150,17 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     }
 
     private fun getTouchedFingerFor(x: Float?, y: Float?): Finger {
-        for(finger in fingersTouchArea) {
-            if(finger.value.contains(x!!, y!!)) {
-                return finger.key
+        for(thisFinger in fingersTouchArea) {
+            if(thisFinger.value.contains(x!!, y!!)) {
+                return thisFinger.key
             }
         }
 
         return Finger.NONE
+    }
+
+    private fun emitSelected() {
+        fingerSelectedListener?.onFingerSelected(hand, finger)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -225,12 +236,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
                 val finalTouchedFinger = getTouchedFingerFor(x, y)
                 if (
                         touchingFinger != Finger.NONE
-                        && touchingFinger != selectedFinger
+                        && touchingFinger != finger
                         && touchingFinger == finalTouchedFinger
                 ) {
-                    selectedFinger = finalTouchedFinger
-                    fingerSelectedListener?.onFingerSelected(hand, finalTouchedFinger)
-
+                    finger = finalTouchedFinger
+                    emitSelected()
                     performClick()
                 }
 

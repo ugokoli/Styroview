@@ -55,7 +55,7 @@ ext {
     siteUrl = 'https://github.com/ugokoli/Styroview'
     gitUrl = 'https://github.com/ugokoli/Styroview.git'
 
-    libraryVersion = '0.1.0'
+    libraryVersion = '0.1.1'
 
     developerId = 'ugokoli'
     developerName = 'Ugonna Okoli'

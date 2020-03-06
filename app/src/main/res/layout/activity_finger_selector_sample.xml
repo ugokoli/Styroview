@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
-            android:padding="0dp"
+            android:padding="20dp"
 
             ugokoli:orientation="up"
 
