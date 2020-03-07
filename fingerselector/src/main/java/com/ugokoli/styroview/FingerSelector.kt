@@ -48,21 +48,21 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     private lateinit var downTouchingPoint: PointF
     private lateinit var fingersTouchArea: HashMap<Finger, RectF>
     private var defaultFingerprint: Bitmap? = drawableToBitmap(resources.getDrawable(R.drawable.ic_fingerprint_black_120dp))
-    private var mOrientation = 1 //1:up, 2:down
-    var fingerprintImg = defaultFingerprint
+    var fingerprintImage = defaultFingerprint
     var hand = Hand.LEFT
         set(value) {
-            field = value
-            refresh()
-            invalidate()
-            emitSelected()
+            if(hand != value) {
+                field = value
+                emitSelected()
+                refresh()
+            }
         }
-    var finger = Finger.INDEX
+    var finger = Finger.ANY
         set(value) {
-            field = value
-            refresh()
-            invalidate()
-            emitSelected()
+            if(finger != value) {
+                field = value
+                emitSelected()
+            }
         }
 
     var fingerSelectedListener: FingerSelectedListener? = null
@@ -80,7 +80,6 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         val a = context.theme.obtainStyledAttributes(attrs, R.styleable.FingerSelector, 0, 0)
 
         try {
-            mOrientation = a.getInteger(R.styleable.FingerSelector_orientation, mOrientation)
             hand = Hand.valueOf(a.getInteger(R.styleable.FingerSelector_defaultHand, hand.ordinal))
             finger = Finger.valueOf(a.getInteger(R.styleable.FingerSelector_defaultFinger, finger.ordinal))
         } catch (e: RuntimeException) {
@@ -102,8 +101,8 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
         highLightPaint.strokeWidth = resources.displayMetrics.density * 5
 
         downTouchingPoint = PointF()
-        touchingFinger = Finger.NONE
-        fingerprintImg = defaultFingerprint
+        touchingFinger = Finger.ANY
+        fingerprintImage = defaultFingerprint
 
         initializeFingersTouchArea()
     }
@@ -138,13 +137,13 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
     }
 
     private fun drawSelectedFingerprint(canvas: Canvas?) {
-        if(finger != Finger.NONE) {
-            if(fingerprintImg != null) {
+        if(finger != Finger.ANY) {
+            if(fingerprintImage != null) {
                 val rectF = fingersTouchArea[finger]!!
                 val newBottom = rectF.top + rectF.right - rectF.left
                 val desRectF = RectF(rectF.left, rectF.top, rectF.right, newBottom)
-                val srcRect = Rect(0, 0, fingerprintImg!!.width, fingerprintImg!!.height)
-                canvas?.drawBitmap(fingerprintImg!!, srcRect, desRectF, paint)
+                val srcRect = Rect(0, 0, fingerprintImage!!.width, fingerprintImage!!.height)
+                canvas?.drawBitmap(fingerprintImage!!, srcRect, desRectF, paint)
             }
         }
     }
@@ -156,10 +155,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
             }
         }
 
-        return Finger.NONE
+        return Finger.ANY
     }
 
     private fun emitSelected() {
+        invalidate()
         fingerSelectedListener?.onFingerSelected(hand, finger)
     }
 
@@ -235,12 +235,11 @@ class FingerSelector : View, ValueAnimator.AnimatorUpdateListener {
                 //Evaluate finger select
                 val finalTouchedFinger = getTouchedFingerFor(x, y)
                 if (
-                        touchingFinger != Finger.NONE
+                        touchingFinger != Finger.ANY
                         && touchingFinger != finger
                         && touchingFinger == finalTouchedFinger
                 ) {
                     finger = finalTouchedFinger
-                    emitSelected()
                     performClick()
                 }
 

@@ -22,7 +22,8 @@
             android:layout_marginEnd="@dimen/fab_margin"
             android:padding="20dp"
 
-            ugokoli:orientation="up"
+            ugokoli:defaultHand="right"
+            ugokoli:defaultFinger="index"
 
             app:layout_anchor="@+id/constraintLayout"
             app:layout_anchorGravity="center"

@@ -15,7 +15,7 @@ enum class Hand {
 }
 
 enum class Finger {
-    THUMB, INDEX, MIDDLE, RING, PINKY, NONE;
+    ANY, THUMB, INDEX, MIDDLE, RING, PINKY;
 
     companion object {
         fun valueOf(value: Int) = values().first{ it.ordinal == value }
