@@ -1,6 +1,6 @@
 ## Finger Selector
 
-![Demo 1](press/20200320_155432_edited.gif)
+![Demo 1](press/ezgif.com-video-to-gif.gif)
 
 - - -
 
