@@ -3,4 +3,9 @@
     <string name="title_activity_split_edit_text_sample">Split Edit Text Sample</string>
     <string name="title_activity_finger_selector_sample">Finger Selector Sample</string>
     <string name="title_activity_main">Styroview</string>
+
+
+    <string name="select_finger"><b>%s %s</b></string>
+    <string name="right_hand">Right Hand</string>
+    <string name="left_hand">Left Hand</string>
 </resources>
